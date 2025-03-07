@@ -12,9 +12,14 @@
 
   I hope that I can make a laser teasing cat toy.
 
-  
+  2025/3/3 v0.1 This is a test project, to test the NodeMCU , motor and serial is ok.
+  2025/3/4 v0.2 use 2 motor to control 1 laser module, but these 2 motor are controled by the same pin GIO2(D4)
+  2025/3/6 v0.3 1.Add a function witch is called "way1", this simple algorithm allows two servos to control the laser move like sawtooth wave. 
                 2.Add #define name rule, update the name of definition.
-
+  2025/3/7 v0.4 1.Add yxzServo.h to declare the variable and macro of my servo-project.alignas
+                2.Add a function witch is called "draw_circle", this simple algorithm allows two servos to control the laser move like a circle.
+                Note: I try to find a way to declare the function in cpp file, wo that I don't have to declare in main file.
+                
   #define name rule : [item]_[type]_[category]_[Detial]
               instance: SERVO_CMMD_SYSTEM_STOP
                         LASER_CMMD_SWITCH_ON
@@ -25,18 +30,10 @@
   */
 
 #include <Servo.h>
+#include "./lib/yxzServo.h"
 
-#define SERVO_CMMD_SYSTEM_STOP  0
-#define SERVO_CMMD_SYSTEM_RUN 1
-#define SERVO_DEGREE_HORIZON_MAX 180
-#define SERVO_DEGREE_HORIZON_MIN 0
-#define SERVO_DEGREE_VERTICAL_MAX 180
-#define SERVO_DEGREE_VERTICAL_MIN 0
 
-int pos_horizon = SERVO_DEGREE_HORIZON_MIN;
-int pos_vertical = SERVO_DEGREE_VERTICAL_MIN;
 
-char servo_cmmd = SERVO_CMMD_SYSTEM_RUN;
 Servo servo_horizon;                            // create servo object to control a servo
 Servo servo_vertical;
                                           // twelve servo objects can be created on most boards
@@ -52,13 +49,18 @@ void setup() {
 void loop() {
   // servo_cmmd = Serial.read();
   // Serial.println(servo_cmmd);
-  if(servo_cmmd == MOTOR_CMMD_SYSTEM_STOP)
+  if(servo_cmmd == SERVO_CMMD_SYSTEM_STOP)
   {
     servo_stop();
   }
-  else if(servo_cmmd == MOTOR_CMMD_SYSTEM_RUN)
+  else if(servo_cmmd == SERVO_CMMD_SYSTEM_RUN)
   {
-    way1();
+    if(theta >= 2*PI)
+    {
+      way1();
+      theta = 0;
+    }
+    draw_circle();
     // servo_run_horizon();
     // servo_run_vertical();
   }else{
@@ -67,6 +69,8 @@ void loop() {
   }
 
 }
+
+
 
 void servo_run_horizon()
 {
@@ -102,7 +106,7 @@ void way1()
 {
   int toward = 1; //define the diraction of servo
   //The horizon diraction of servo is moved as normal(1 degree per cycle), vertical servo is performs reciprocating motion at an angle of 0-30 degrees(2 degree per cycle)
-  for (pos_horizon = SERVO_DEGREE_HORIZON_MIN; pos_horizon <= SERVO_DEGREE_HORIZON_MAX; pos_horizon += 1) {   
+  for (pos_horizon = SERVO_DEGREE_HORIZON_MIN; pos_horizon <= 60; pos_horizon += 1) {   
     if(toward == 1)
     {
           if(pos_vertical <= 30 && pos_vertical >= 0){
@@ -129,6 +133,29 @@ void way1()
     // Serial.println(pos_vertical);
     delay(15);
   }
+}
+
+void draw_circle()
+{
+  // 计算当前点的坐标
+  int posX = centerX + radius * cos(theta);
+  int posY = centerY + radius * sin(theta);
+  
+  // 约束角度在0-180之间
+  posX = constrain(posX, 0, 180);
+  posY = constrain(posY, 0, 180);
+  
+  // 设置舵机角度
+  servo_horizon.write(posX);
+  servo_vertical.write(posY);
+  
+  // 更新角度θ，保持在0-2π范围内
+  theta += thetaIncrement;
+  // if (theta >= 2 * PI) {
+  //   theta -= 2 * PI;
+  // }
+  
+  delay(delayTime); // 控制运动速度
 }
 
 void servo_stop()

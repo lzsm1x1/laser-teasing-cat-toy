@@ -7,6 +7,9 @@
 v0.1 This is a test project, to test the NodeMCU , motor and serial is ok.
 v0.2 use 2 motor to control 1 laser module, but these 2 motor are controled by the same pin GIO2(D4)
 v0.3 Add a function witch is called "way1", this simple algorithm allows two servos to control the lazer move like sawtooth wave. 
+v0.4 1.Add yxzServo.h to declare the variable and macro of my servo-project.alignas
+                2.Add a function witch is called "draw_circle", this simple algorithm allows two servos to control the laser move like a circle.
+                Note: I try to find a way to declare the function in cpp file, wo that I don't have to declare in main file.
 
 ![初版模型](image.png)
 使用了该模型：
